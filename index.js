@@ -2,6 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 var assign = require('object-assign');
+var gulp = require('gulp');
 
 function isString(str) {
 	return 'string' === typeof str;
@@ -36,7 +37,7 @@ module.exports = function(options) {
 
 	var opts = assign(getDefaults(), options);
 	var absoluteBasePath = path.resolve( opts.dir );
-	var gulp = opts.gulp || require('gulp');
+	var gulpInstance = opts.gulp || gulp;
 
 	function byExtension(fileName) {
 		var extension = path.extname(fileName);
@@ -54,7 +55,7 @@ module.exports = function(options) {
 		var dependencies = func.dependencies || [];
 		var taskName = stripExtension(task);
 		var context = {
-			gulp: opts.gulp && gulp,
+			gulp: gulpInstance,
 			opts: opts
 		};
 
@@ -63,7 +64,7 @@ module.exports = function(options) {
 			taskName = parents.join(':') + ':' + taskName;
 		}
 
-		gulp.task(taskName, dependencies, func.bind(context));
+		gulpInstance.task(taskName, dependencies, func.bind(context));
 	}
 
 	function loadTasks(currentPath) {
@@ -79,7 +80,9 @@ module.exports = function(options) {
 					loadTasks(path.join(currentPath, subPath));
 				});
 		}
+
+		return gulpInstance;
 	}
 
-	loadTasks(absoluteBasePath);
+	return loadTasks(absoluteBasePath);
 };
