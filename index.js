@@ -1,7 +1,6 @@
 'use strict';
 var fs = require('fs');
 var path = require('path');
-var gulp = require('gulp');
 var assign = require('object-assign');
 
 function isString(str) {
@@ -36,6 +35,8 @@ module.exports = function(options) {
 	}
 
 	var opts = assign(getDefaults(), options);
+	var absoluteBasePath = path.resolve( opts.dir );
+	var gulp = opts.gulp || require('gulp');
 
 	function byExtension(fileName) {
 		var extension = path.extname(fileName);
@@ -48,12 +49,12 @@ module.exports = function(options) {
 	}
 
 	function loadTask(parents, task) {
-		var modulePath = path.join(process.cwd(), opts.dir, parents.join(path.sep) || '', task);
+		var modulePath = path.join(absoluteBasePath, parents.join(path.sep) || '', task);
 		var func = require(modulePath);
 		var dependencies = func.dependencies || [];
 		var taskName = stripExtension(task);
 		var context = {
-			gulp: gulp,
+			gulp: opts.gulp && gulp,
 			opts: opts
 		};
 
@@ -70,7 +71,7 @@ module.exports = function(options) {
 		var stats = fs.lstatSync(currentPath);
 
 		if (stats.isFile() && byExtension(file)) {
-			loadTask(currentPath.split(path.sep).slice(opts.dir.split(path.sep).length, -1), file);
+			loadTask(currentPath.split(path.sep).slice(absoluteBasePath.split(path.sep).length, -1), file);
 		}
 		else if (stats.isDirectory()) {
 			fs.readdirSync(currentPath)
@@ -80,5 +81,5 @@ module.exports = function(options) {
 		}
 	}
 
-	loadTasks(opts.dir);
+	loadTasks(absoluteBasePath);
 };

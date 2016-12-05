@@ -99,10 +99,15 @@ Given the files in folder *copy* - two tasks have been created. `copy:all` & `co
 
 ## Options
 
+### gulp
+
+A gulp instance to attach tasks to. Defaults to a new instance if not provided. 
+
 ### dir
 Type `String` Default `gulp-tasks`
 
-Path to folder with gulp tasks
+Absolute path to folder with gulp tasks, (hint, use __dirname to get the absolute path from a specific module)
+You can also specify a path relative to the process working directory 
 
 ### extensions
 Type `Array` Default to keys of `require.extensions`
